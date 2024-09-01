@@ -2,6 +2,7 @@
 using CleanArchitecture.Data;
 using CleanArchitecture.Domain;
 using Microsoft.EntityFrameworkCore;
+using System.Runtime.CompilerServices;
 
 //instancia de dbContext
 StreamerDbContext dbContext = new();
@@ -9,9 +10,10 @@ StreamerDbContext dbContext = new();
 //llamado al metodo de insercion
 //await AddNewRecords();
 //llamado a metodos que realizan consulta
-QueryStreaming();
-QueryVideo();
-await QueryFilter();
+//QueryStreaming();
+//QueryVideo();
+//await QueryFilter();
+await QueryMethods();
 
 Console.WriteLine("presione cualquier tecla para terminar el programa");
 //Para cerrar la consola con cualquier tecla
@@ -36,6 +38,30 @@ async Task QueryFilter()
     {
         Console.WriteLine($"{streamer.Id} - {streamer.Name}");
     }
+
+}
+async Task QueryMethods()
+{
+    //factorizacion para minimizar las lineas de coidog
+    var stream = dbContext!.Streamers!;
+    //FirstAsync() asume que existe la data, en caso de que no exista, no tendra ningun resultado y dispara exception o error, detiene el programa
+    var firstAsync = await stream.Where(y => y.Name.Contains("a")).FirstAsync();
+    //FirstOrDefaultAsync() sino encuentra nada, retorna un valor por defecto en null, no detiene el programa
+    var firstOrDefaultAsync = await stream.Where(y => y.Name.Contains("a")).FirstOrDefaultAsync();
+    //al eliminar el where y reemplazar por FirstOrDefaultAsync() con expresion lambda
+    var strefirstOrDefaultAsyncSinWhere = await stream.FirstOrDefaultAsync(y => y.Name.Contains("a"));
+    //resultado debe ser un unico valor,  si el resultado tiene mas de un valor el resultado sera una exception
+    var singleAsync = await stream.Where(y => y.Id == 1).SingleAsync();
+    //no retorna exception, retorna valor null o valor que corresponde
+    var singleOrDefaultAsync = await stream.Where(y => y.Id == 1).SingleOrDefaultAsync();
+
+    var resultado = await stream.FindAsync(3);
+
+    //var count = await stream.CountAsync();
+    //var longAccount = await stream.LongCountAsync();
+    //var min = await stream.MinAsync(2);
+    //var max = await stream.MaxAsync(1);
+
 
 }
 //Para retornar la lista de el objeto que se le pase
