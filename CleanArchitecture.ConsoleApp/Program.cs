@@ -13,12 +13,30 @@ StreamerDbContext dbContext = new();
 //QueryVideo();
 //await QueryFilter();
 //await QueryMethods();
-await QueryLinq();
+//await QueryLinq();
+await TrackingAndnotTracking();
 
 Console.WriteLine("presione cualquier tecla para terminar el programa");
 //Para cerrar la consola con cualquier tecla
 Console.ReadKey();
 
+//Tracking and NotTracking
+async Task TrackingAndnotTracking()
+{
+    var stream = dbContext!.Streamers!;
+    //tracking esta incorporado por default
+    var streamerWithTracking = await stream.FirstOrDefaultAsync(x => x.Id == 1);
+    //se debe poner la clausula o method AsNoTracking()
+    //obtiene resultado liberandolo de memoria, por lo cual no permitira realizar actualizacion
+    var streamerWithNotTracking = await stream.AsNoTracking().FirstOrDefaultAsync(x => x.Id == 3);
+
+
+    streamerWithTracking.Name = "Netflix Magis";
+    streamerWithNotTracking.Name = "Disney Plus";
+
+    await dbContext!.SaveChangesAsync();
+
+}
 
 //sintaxis de LinQ
 async Task QueryLinq()
@@ -72,7 +90,7 @@ async Task QueryMethods()
     var singleAsync = await stream.Where(y => y.Id == 1).SingleAsync();
     //no retorna exception, retorna valor null o valor que corresponde
     var singleOrDefaultAsync = await stream.Where(y => y.Id == 1).SingleOrDefaultAsync();
-
+    // busca un record por la clave primaria
     var resultado = await stream.FindAsync(3);
 
     //var count = await stream.CountAsync();
