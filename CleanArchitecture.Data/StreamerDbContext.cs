@@ -30,6 +30,16 @@ namespace CleanArchitecture.Data
                 .IsRequired()
                 //eliminacion en cascada
                 .OnDelete(DeleteBehavior.Restrict);
+
+            //Declaracion de relacion muchos a muchos en tabla intermedia
+            modelBuilder.Entity<Video>()
+                //muchos actor (muchas instancias de actor)
+                .HasMany(m => m.Actors)
+                //muchos videos (muchas instancias de videos)
+                .WithMany(t => t.Videos)
+                //Tabla que se usa para manejar la relacion
+                .UsingEntity<VideoActor>(pt => pt.HasKey(e => new {e.ActorId, e.VideoId})
+                );
                 
         }
         public DbSet<Streamer>? Streamers {  get; set; } 
