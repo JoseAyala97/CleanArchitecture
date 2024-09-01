@@ -1,6 +1,6 @@
 ﻿
 using CleanArchitecture.Data;
-using CleanArchitecture.Domain;
+using CleanArchitecture.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 //instancia de dbContext
@@ -14,7 +14,7 @@ StreamerDbContext dbContext = new();
 //await QueryFilter();
 //await QueryMethods();
 //await QueryLinq();
-await TrackingAndnotTracking();
+//await TrackingAndnotTracking();
 
 Console.WriteLine("presione cualquier tecla para terminar el programa");
 //Para cerrar la consola con cualquier tecla
@@ -37,7 +37,6 @@ async Task TrackingAndnotTracking()
     await dbContext!.SaveChangesAsync();
 
 }
-
 //sintaxis de LinQ
 async Task QueryLinq()
 {
