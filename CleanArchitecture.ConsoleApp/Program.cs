@@ -15,11 +15,71 @@ StreamerDbContext dbContext = new();
 //await QueryMethods();
 //await QueryLinq();
 //await TrackingAndnotTracking();
+//await AddNewStreamerWithVideo();
+//await AddNewStreamerWithVideoId();
+//await AddNewActorWithVideo();
+//await AddNewDirectorWithVideo();
 
 Console.WriteLine("presione cualquier tecla para terminar el programa");
 //Para cerrar la consola con cualquier tecla
 Console.ReadKey();
+async Task AddNewDirectorWithVideo()
+{
+    var director = new Director
+    {
+        Name = "Lorenzo",
+        LastName = "Basteri",
+        VideoId = 1
+    };
+    await dbContext.AddAsync(director);
+    await dbContext.SaveChangesAsync();
+}
+async Task AddNewActorWithVideo()
+{
+    var actor = new Actor
+    {
+        Name = "Brad",
+        LastName = "Pitt"
+    };
 
+    await dbContext.AddAsync(actor);
+    await dbContext.SaveChangesAsync();
+
+    var videoActor = new VideoActor
+    {
+        ActorId = actor.Id,
+        VideoId = 1
+    };
+    await dbContext.AddAsync(videoActor);
+    await dbContext.SaveChangesAsync();
+}
+async Task AddNewStreamerWithVideoId()
+{
+
+    var BatmanForever = new Video
+    {
+        Name = "hungerGames",
+        StreamerId = 4
+    };
+
+    await dbContext.AddAsync(BatmanForever);
+    await dbContext.SaveChangesAsync();
+}
+async Task AddNewStreamerWithVideo()
+{
+    var pantalla = new Streamer
+    {
+        Name = "Pantalla"
+    };
+    var video = new Video
+    {
+        Name = "hungerGames",
+        Streamer = pantalla,
+    };
+
+    await dbContext.AddAsync(video);
+    await dbContext.SaveChangesAsync();
+}
 //Tracking and NotTracking
 async Task TrackingAndnotTracking()
 {
