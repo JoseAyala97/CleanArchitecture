@@ -2,7 +2,6 @@
 using CleanArchitecture.Data;
 using CleanArchitecture.Domain;
 using Microsoft.EntityFrameworkCore;
-using System.Runtime.CompilerServices;
 
 //instancia de dbContext
 StreamerDbContext dbContext = new();
@@ -13,11 +12,30 @@ StreamerDbContext dbContext = new();
 //QueryStreaming();
 //QueryVideo();
 //await QueryFilter();
-await QueryMethods();
+//await QueryMethods();
+await QueryLinq();
 
 Console.WriteLine("presione cualquier tecla para terminar el programa");
 //Para cerrar la consola con cualquier tecla
 Console.ReadKey();
+
+
+//sintaxis de LinQ
+async Task QueryLinq()
+{
+    var stream = dbContext!.Streamers!;
+    Console.WriteLine($"Ingrese el servicio de streaming");
+    var streamerName = Console.ReadLine();
+    //Sintaxis  linQ i representa la data - columnas de la entidad (select informa lo que se quiere retornar en el ejemplo todo lo que representa i)
+    var streamers = await (from i in stream
+                           where EF.Functions.Like(i.Name, $"%{streamerName}%")
+                           select i).
+                           ToListAsync();
+    foreach(var streamer in streamers)
+    {
+        Console.WriteLine($"{streamer.Id} - {streamer.Name}");
+    }
+}
 async Task QueryFilter()
 {
     Console.WriteLine($"Ingrese una compania de streaming");
