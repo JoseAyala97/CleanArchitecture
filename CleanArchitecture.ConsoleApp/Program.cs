@@ -4,43 +4,73 @@ using CleanArchitecture.Domain;
 
 //instancia de dbContext
 StreamerDbContext dbContext = new();
-//objeto directo de dbcontext -> permitira insertar en la tabla Streamer
-Streamer streamer = new Streamer()
+
+//llamado al metodo de insercion
+//await AddNewRecords();
+//llamado a metodos que realizan consulta
+QueryStreaming();
+QueryVideo();
+
+
+//Para retornar la lista de el objeto que se le pase
+void QueryStreaming()
 {
-    Name = "Amazon Prime",
-    Url = "https://www.amazonprime.com"
-};
+    var streamers = dbContext.Streamers!.ToList();
+    foreach (var streamer in streamers)
+    {
+        Console.WriteLine($"{streamer.Id} - {streamer.Name}");
+    }
+}
+//Para retornar la lista de el objeto que se le pase
+void QueryVideo()
+{
+    var videos = dbContext.Videos!.ToList();
+    foreach (var video in videos)
+    {
+        Console.WriteLine($"{video.Id} - {video.Name} - {video.StreamerId}");
+    }
+}
+//Metodo que servira para realizar la insercion
+async Task AddNewRecords()
+{
+    //objeto directo de dbcontext -> permitira insertar en la tabla Streamer
+    Streamer streamer = new Streamer()
+    {
+        Name = "Disney",
+        Url = "https://www.disney.com"
+    };
 
-//es signo de admiracion me permite informar que el objeto existe
-dbContext!.Streamers!.Add(streamer);
-//para guardar la insercion
-await dbContext.SaveChangesAsync();
+    //es signo de admiracion me permite informar que el objeto existe
+    dbContext!.Streamers!.Add(streamer);
+    //para guardar la insercion
+    await dbContext.SaveChangesAsync();
 
-var movies = new List<Video>
+    var movies = new List<Video>
 {
     new Video
     {
-        Name = "Mad Max",
-        StreamerId = 1
+        Name = "Mickey Mouse",
+        StreamerId = streamer.Id
     },
     new Video
     {
-        Name = "Accidente",
+        Name = "La Cenicienta",
         StreamerId = streamer.Id
     },
         new Video
     {
-        Name = "Crepusculo",
+        Name = "101 Dalmatas",
         StreamerId = streamer.Id
     },
             new Video
     {
-        Name = "Citizen Kane",
+        Name = "Los Increibles",
         StreamerId = streamer.Id
     }
 };
 
-//para guardar un cambio en una lista un arreglo
-await dbContext.AddRangeAsync(movies);
-//para guardar en el contexto
-await dbContext.SaveChangesAsync();
+    //para guardar un cambio en una lista un arreglo
+    await dbContext.AddRangeAsync(movies);
+    //para guardar en el contexto
+    await dbContext.SaveChangesAsync();
+}
