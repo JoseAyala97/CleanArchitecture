@@ -3,6 +3,7 @@ using System.Linq.Expressions;
 
 namespace CleanArchitecture.Application.Contracts.Persistence
 {
+    //permite dar mantenimiento a todas las entidades del proyecto
     public interface IAsyncRepository<T> where T : BaseDomainModel
     {
         //IReadOnlyList , T indica que sera de tipo generico
