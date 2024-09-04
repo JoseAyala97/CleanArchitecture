@@ -1,7 +1,7 @@
 ﻿using CleanArchitecture.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace CleanArchitecture.Data
+namespace CleanArchitecture.Infrastructure
 {
     public class StreamerDbContext : DbContext
     {
