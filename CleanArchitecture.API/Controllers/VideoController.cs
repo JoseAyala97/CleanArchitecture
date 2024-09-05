@@ -21,9 +21,9 @@ namespace CleanArchitecture.API.Controllers
         public async Task<ActionResult<IEnumerable<VideosVm>>> GetVideosByUserName(string userName)
         {
             var query = new GetVideosListQuery(userName);
-            await _mediator.Send(query);
+            var videos = await _mediator.Send(query);
 
-            return Ok(query);
+            return Ok(videos);
         }
 
     }
