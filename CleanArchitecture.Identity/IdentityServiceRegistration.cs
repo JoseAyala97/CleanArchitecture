@@ -16,15 +16,16 @@ namespace CleanArchitecture.Identity
     {
         public static IServiceCollection ConfigureIdentityServices(this IServiceCollection services, IConfiguration configuration)
         {
-            //para que lea las referencias realizadas
             services.Configure<JWTSettings>(configuration.GetSection("JwtSettings"));
+
             services.AddDbContext<CleanArchitectureIdentityDbContext>(options =>
                 options.UseSqlServer(configuration.GetConnectionString("IdentityConnectionString"),
                 b => b.MigrationsAssembly(typeof(CleanArchitectureIdentityDbContext).Assembly.FullName)));
 
+
             services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<CleanArchitectureIdentityDbContext>()
-                .AddDefaultTokenProviders();
+                .AddEntityFrameworkStores<CleanArchitectureIdentityDbContext>().AddDefaultTokenProviders();
+
 
             services.AddTransient<IAuthServices, AuthServices>();
 
@@ -45,8 +46,8 @@ namespace CleanArchitecture.Identity
                     ValidAudience = configuration["JwtSettings:Audience"],
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtSettings:Key"]))
                 };
-            });
 
+            });
             return services;
         }
     }

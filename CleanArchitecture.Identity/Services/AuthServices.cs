@@ -17,66 +17,121 @@ namespace CleanArchitecture.Identity.Services
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly JWTSettings _jwtSettings;
+        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly CleanArchitectureIdentityDbContext _context;
 
-        public AuthServices(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IOptions<JWTSettings> jwtSettings)
+        public AuthServices(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IOptions<JWTSettings> jwtSettings, RoleManager<IdentityRole> roleManager, CleanArchitectureIdentityDbContext context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _jwtSettings = jwtSettings.Value;
+            _roleManager = roleManager;
+            _context = context;
         }
 
         public async Task<AuthResponse> Login(AuthRequest request)
         {
-            var user = await _userManager.FindByEmailAsync(request.Email);
-            if (user == null)
-                throw new Exception($"El usuario con email {request.Email} no existe");
-            var resultado = await _signInManager.PasswordSignInAsync(user.UserName, request.Password, false, lockoutOnFailure: false);
-            if (!resultado.Succeeded)
-                throw new Exception($"Las credenciales son incorrectas");
+            using (var transaction = await _context.Database.BeginTransactionAsync())
 
-            var token = await GenerateToken(user);
-            var authResponse = new AuthResponse
+                try
+                {
+                var user = await _userManager.FindByEmailAsync(request.Email);
+
+                if (user == null)
+                {
+                    throw new Exception($"El usuario con email {request.Email} no existe");
+                }
+
+                var resultado = await _signInManager.PasswordSignInAsync(user.UserName, request.Password, false, lockoutOnFailure: false);
+
+                if (!resultado.Succeeded)
+                {
+                    throw new Exception($"Las credenciales son incorrectas");
+                }
+
+                var token = await GenerateToken(user);
+                var authResponse = new AuthResponse
+                {
+                    Id = user.Id,
+                    Token = new JwtSecurityTokenHandler().WriteToken(token),
+                    Email = user.Email,
+                    Username = user.UserName,
+                };
+
+                return authResponse;
+            }
+            catch
             {
-                Id = user.Id,
-                Token = new JwtSecurityTokenHandler().WriteToken(token),
-                Email = user.Email,
-                Username = user.UserName
-            };
-
-            return authResponse;
+                    // Revertir la transacción si ocurre un error
+                    await transaction.RollbackAsync();
+                    throw;
+                }
         }
 
         public async Task<RegistrationResponse> Register(RegistrationRequest request)
         {
-            var existingUser = await _userManager.FindByNameAsync(request.UserName);
-            if (existingUser != null)
-                throw new Exception($"El usuario ya fue tomando por otra cuenta");
-
-            var existinEmail = await _userManager.FindByEmailAsync(request.Email);
-            if (existinEmail != null)
-                throw new Exception($"El email ya se encuentra registrado");
-
-            var user = new ApplicationUser
+            using (var transaction = await _context.Database.BeginTransactionAsync())
             {
-                Email = request.Email,
-                Name = request.Name,
-                LastName = request.LastName,
-                UserName = request.UserName,
-                EmailConfirmed = true
-            };
-            var result = await _userManager.CreateAsync(user, request.Password);
-            if (result.Succeeded)
-                await _userManager.AddToRoleAsync(user, "Client");
+                try
+                {
+                    var existingUser = await _userManager.FindByNameAsync(request.UserName);
+                    if (existingUser != null)
+                        throw new Exception($"El usuario ya fue tomado por otra cuenta");
 
-            var token = await GenerateToken(user);
-            return new RegistrationResponse
-            {
-                Email = user.Email,
-                Token = new JwtSecurityTokenHandler().WriteToken(token),
-                UserId = user.Id,
-                Username = user.UserName
-            };
-            throw new Exception($"{result.Errors}");
+                    var existingEmail = await _userManager.FindByEmailAsync(request.Email);
+                    if (existingEmail != null)
+                        throw new Exception($"El email ya se encuentra registrado");
+
+                    var user = new ApplicationUser
+                    {
+                        Email = request.Email,
+                        Name = request.Name,
+                        LastName = request.LastName,
+                        UserName = request.UserName,
+                        EmailConfirmed = true
+                    };
+
+                    var result = await _userManager.CreateAsync(user, request.Password);
+
+                    if (!result.Succeeded)
+                    {
+                        var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                        throw new Exception($"Error al crear el usuario: {errors}");
+                    }
+
+                    // Asignar el rol seleccionado
+                    if (!string.IsNullOrEmpty(request.Role))
+                    {
+                        if (await _roleManager.RoleExistsAsync(request.Role))
+                        {
+                            await _userManager.AddToRoleAsync(user, request.Role);
+                        }
+                        else
+                        {
+                            throw new Exception($"El rol '{request.Role}' no existe.");
+                        }
+                    }
+
+                    var token = await GenerateToken(user);
+
+                    // Confirmar la transacción si todo ha salido bien
+                    await transaction.CommitAsync();
+
+                    return new RegistrationResponse
+                    {
+                        Email = user.Email,
+                        Token = new JwtSecurityTokenHandler().WriteToken(token),
+                        UserId = user.Id,
+                        Username = user.UserName
+                    };
+                }
+                catch
+                {
+                    // Revertir la transacción si ocurre un error
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            }
         }
         private async Task<JwtSecurityToken> GenerateToken(ApplicationUser user)
         {
