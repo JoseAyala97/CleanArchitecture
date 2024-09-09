@@ -18,7 +18,15 @@ namespace CleanArchitecture.Infrastructure.Repositories
         //dispara la confirmacion de todas las transacciones
         public async Task<int> Complete()
         {
-           return await _dbContext.SaveChangesAsync();
+            try
+            {
+                return await _dbContext.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Err" ,ex);
+            }
+           
         }
         //que se elimine el context cuando la transaccion haya terminado
         public void Dispose()
@@ -38,7 +46,7 @@ namespace CleanArchitecture.Infrastructure.Repositories
             if (!_repositories.ContainsKey(type))
             {
                 //como no existe lo agregara, pero primero debera crearlo
-                var repositoryType = typeof(IAsyncRepository<>);
+                var repositoryType = typeof(RepositoryBase<>);
                 //llamado a su instancia
                 var repositoryInstance = Activator.CreateInstance(repositoryType.MakeGenericType(typeof(TEntity)), _dbContext);
                 //ahora solo debe agregarse la instancia

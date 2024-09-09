@@ -9,7 +9,7 @@ namespace CleanArchitecture.API.Controllers
     [Route("api/v1/[controller]")]
     public class VideoController : ControllerBase
     {
-        private readonly IMediator _mediator;
+        private IMediator _mediator;
 
         public VideoController(IMediator mediator)
         {

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using CleanArchitecture.Application.Features.Directors.Commands.CreateDirector;
 using CleanArchitecture.Application.Features.Streamers.Commands.CreateStreamer;
 using CleanArchitecture.Application.Features.Videos.Queries.GetVideosList;
 using CleanArchitecture.Domain.Entities;
@@ -14,6 +15,8 @@ namespace CleanArchitecture.Application.Mappings
             CreateMap<Video, VideosVm>();
             //creacion de mapper de StreamerCommand a Streamer
             CreateMap<CreateStreamerCommand, Streamer>();
+            //creacion de mapper de CreateDirectorCommand a Director
+            CreateMap<CreateDirectorCommand, Director>();
         }
     }
 }
