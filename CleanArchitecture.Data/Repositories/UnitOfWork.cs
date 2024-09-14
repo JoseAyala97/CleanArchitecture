@@ -11,6 +11,15 @@ namespace CleanArchitecture.Infrastructure.Repositories
         //objeto collection porque alojara todos los otros repostiroes
         private Hashtable _repositories;
         private readonly StreamerDbContext _dbContext;
+        //referencias a cada repository personalizado para poder realizar el uso de UnitOfWork
+        //como est ainicializando un objeto, se quita el readonly
+        private IVideoRepository _videoRepository;
+        private IStreamerRepository _streamerRepository;
+        //inyeccion de la dependencia -- informando que no puede ser nulo usando el doble ??
+        public IVideoRepository VideoRepository => _videoRepository ??= new VideoRepository(_dbContext);
+        public IStreamerRepository StreamerRepository => _streamerRepository??= new StreamerRepository(_dbContext);
+
+
         public UnitOfWork(StreamerDbContext dbContext)
         {
             _dbContext = dbContext;
