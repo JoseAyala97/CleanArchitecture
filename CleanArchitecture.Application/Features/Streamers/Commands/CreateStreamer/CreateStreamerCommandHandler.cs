@@ -10,14 +10,17 @@ namespace CleanArchitecture.Application.Features.Streamers.Commands.CreateStream
 {
     public class CreateStreamerCommandHandler : IRequestHandler<CreateStreamerCommand, int>
     {
-        private readonly IStreamerRepository _streamerRepository;
+        //se retira este llamdo y se usa UnitOfWOrk
+        //private readonly IStreamerRepository _streamerRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IEmailServices _emailServices;
         //sobre clase que se trabaja
         private readonly ILogger<CreateStreamerCommandHandler> _logger;
-        public CreateStreamerCommandHandler(IStreamerRepository streamerRepository, IMapper mapper, IEmailServices emailServices, ILogger<CreateStreamerCommandHandler> logger)
+        public CreateStreamerCommandHandler(IUnitOfWork unitOfWork, IMapper mapper, IEmailServices emailServices, ILogger<CreateStreamerCommandHandler> logger)
         {
-            _streamerRepository = streamerRepository;
+            //_streamerRepository = unitOfWork;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
             _emailServices = emailServices;
             _logger = logger;
@@ -27,12 +30,24 @@ namespace CleanArchitecture.Application.Features.Streamers.Commands.CreateStream
         {
             //Mapeo de la entidad que secreara a mapper
             var streamerEntity = _mapper.Map<Streamer>(request);
-            var newStremaer = await _streamerRepository.AddAsync(streamerEntity);
-            _logger.LogInformation($"Streamer {newStremaer.Id} fue creado exitosamente.");
+            //ya no se estara usano streaerRepository
+            //var newStremaer = await _streamerRepository.AddAsync(streamerEntity);
+            //ahora se usara la instancia de unitOfWork
+            _unitOfWork.StreamerRepository.AddEntity(streamerEntity);
+            //confirmar la transaccion --si es menor o igual a 0 dara error
+            var result = await _unitOfWork.Complete();
+            if (result <= 0)
+            {
+                throw new Exception($"No se pudo insertar el record de streaemr");
+            }
+            //_logger.LogInformation($"Streamer {newStremaer.Id} fue creado exitosamente.");
+            _logger.LogInformation($"Streamer {streamerEntity.Id} fue creado exitosamente.");
             //llamado del metodo para hacer el envio del correo
-            await SendEmail(newStremaer);
+            //await SendEmail(newStremaer);
+            await SendEmail(streamerEntity);
 
-            return newStremaer.Id;
+            //return newStremaer.Id;
+            return streamerEntity.Id;
         }
         //Metodo para el envio de correo al realizar la creacion de un streamer
         private async Task SendEmail(Streamer streamer)

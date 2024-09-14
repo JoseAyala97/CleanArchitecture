@@ -12,7 +12,7 @@ namespace CleanArchitecture.API.Controllers
     [Route("api/v1/[controller]")]
     public class StreamerController : ControllerBase
     {
-        private readonly IMediator _mediator;
+        private IMediator _mediator;
 
         public StreamerController(IMediator mediator)
         {
@@ -20,7 +20,7 @@ namespace CleanArchitecture.API.Controllers
         }
 
         [HttpPost(Name = "CreateStreamer")]
-        [Authorize(Roles= "Administrator")]
+        [Authorize(Roles= "Administrador")]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         public async Task<ActionResult<int>> CreateStreamer([FromBody]CreateStreamerCommand command)
         {

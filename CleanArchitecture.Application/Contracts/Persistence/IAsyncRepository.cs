@@ -25,5 +25,10 @@ namespace CleanArchitecture.Application.Contracts.Persistence
         Task<T> UpdateAsync(T entity);
         //Eliminar cualquier registro
         Task DeleteAsync(T entity);
+
+        //metodos nuevos para UnitOfWork - No son procesos asincronos
+        void AddEntity(T entity);
+        void UpdateEntity(T entity);
+        void DeleteEntity(T entity);
     }
 }

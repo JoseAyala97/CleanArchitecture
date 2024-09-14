@@ -28,6 +28,9 @@ namespace CleanArchitecture.Infrastructure
             services.Configure<EmailSettings>(c => configuration.GetSection("EmailSettings"));
             services.AddTransient<IEmailServices, EmailService>();
 
+            //inyeccion de repositories
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+
 
             return services;
         }
